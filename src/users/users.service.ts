@@ -4,7 +4,7 @@ import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  constructor(private db: DatabaseService) {}
+  constructor(private readonly db: DatabaseService) {}
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
     try {
@@ -25,12 +25,16 @@ export class UsersService {
   }
 
   async findUnique(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    where: Prisma.UserWhereUniqueInput,
     args?: Omit<Prisma.UserFindUniqueArgs, 'where'>,
   ): Promise<User | null> {
     return this.db.user.findUnique({
-      where: userWhereUniqueInput,
+      where,
       ...args,
     });
+  }
+
+  async update(args: Prisma.UserUpdateArgs): Promise<User> {
+    return this.db.user.update(args);
   }
 }

@@ -6,8 +6,8 @@ import type { RequestUser } from './req-user';
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async signUp(email: string, password: string) {
