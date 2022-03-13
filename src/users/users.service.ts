@@ -1,24 +1,36 @@
-import { Injectable } from '@nestjs/common';
-
-// This should be a real class/interface representing a user entity
-export type User = any;
+import { ConflictException, Injectable } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
+import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  constructor(private db: DatabaseService) {}
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    try {
+      const newUser = await this.db.user.create({
+        data,
+      });
+      return newUser;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException(
+            'An account associated to this email already exists.',
+          );
+        }
+      }
+      throw error;
+    }
+  }
+
+  async findUnique(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    args?: Omit<Prisma.UserFindUniqueArgs, 'where'>,
+  ): Promise<User | null> {
+    return this.db.user.findUnique({
+      where: userWhereUniqueInput,
+      ...args,
+    });
   }
 }
