@@ -6,12 +6,9 @@ import { User, Prisma } from '@prisma/client';
 export class UsersService {
   constructor(private readonly db: DatabaseService) {}
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
+  async create(params: Prisma.UserCreateArgs): Promise<User> {
     try {
-      const newUser = await this.db.user.create({
-        data,
-      });
-      return newUser;
+      return await this.db.user.create(params);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -24,17 +21,11 @@ export class UsersService {
     }
   }
 
-  async findUnique(
-    where: Prisma.UserWhereUniqueInput,
-    args?: Omit<Prisma.UserFindUniqueArgs, 'where'>,
-  ): Promise<User | null> {
-    return this.db.user.findUnique({
-      where,
-      ...args,
-    });
+  async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
+    return this.db.user.findUnique(params);
   }
 
-  async update(args: Prisma.UserUpdateArgs): Promise<User> {
-    return this.db.user.update(args);
+  async update(params: Prisma.UserUpdateArgs): Promise<User> {
+    return this.db.user.update(params);
   }
 }

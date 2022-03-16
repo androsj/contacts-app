@@ -11,19 +11,19 @@ export class AuthService {
   ) {}
 
   async signUp(email: string, password: string) {
-    return this.usersService.create({ email, password });
+    return this.usersService.create({
+      data: { email, password },
+    });
   }
 
   async validateUser(
     email: string,
     _password: string,
   ): Promise<RequestUser | null> {
-    const user = await this.usersService.findUnique(
-      { email },
-      {
-        select: { id: true, email: true, password: true, name: true },
-      },
-    );
+    const user = await this.usersService.findUnique({
+      where: { email },
+      select: { id: true, email: true, password: true, name: true },
+    });
     if (user && user.password === _password) {
       const { password, ...result } = user;
       return result;
