@@ -1,41 +1,53 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { Contact, Prisma } from '@prisma/client';
+import { RequestUser } from 'src/auth/req-user';
 
 @Injectable()
 export class ContactsService {
   constructor(private readonly db: DatabaseService) {}
 
-  async create(data: Prisma.ContactCreateInput): Promise<Contact> {
-    return this.db.contact.create({
-      data,
-    });
+  async create(params: Prisma.ContactCreateArgs): Promise<Contact> {
+    return this.db.contact.create(params);
   }
 
-  async findMany(args?: Prisma.ContactFindManyArgs): Promise<Contact[]> {
-    return this.db.contact.findMany(args);
+  async findMany(params?: Prisma.ContactFindManyArgs): Promise<Contact[]> {
+    return this.db.contact.findMany(params);
   }
 
-  async findUnique(id: number): Promise<Contact> {
-    const contact = await this.db.contact.findUnique({
-      where: { id },
-    });
+  async findUnique(params: Prisma.ContactFindUniqueArgs): Promise<Contact> {
+    const contact = await this.db.contact.findUnique(params);
+
     if (!contact) {
       throw new NotFoundException('Contact was not found');
     }
+
     return contact;
   }
 
-  async update(id: number, data: Prisma.ContactUpdateInput): Promise<Contact> {
-    return this.db.contact.update({
-      where: { id },
-      data,
-    });
+  async findUniqueIfAllowed(params: {
+    user: RequestUser;
+    id: number;
+  }): Promise<Contact> {
+    const { user, id } = params;
+    const contact = await this.findUnique({ where: { id } });
+
+    if (contact.userId !== user.id) {
+      throw new UnauthorizedException('You do not have access to this contact');
+    }
+
+    return contact;
   }
 
-  async delete(id: number): Promise<Contact> {
-    return this.db.contact.delete({
-      where: { id },
-    });
+  async update(params: Prisma.ContactUpdateArgs): Promise<Contact> {
+    return this.db.contact.update(params);
+  }
+
+  async delete(params: Prisma.ContactDeleteArgs): Promise<Contact> {
+    return this.db.contact.delete(params);
   }
 }

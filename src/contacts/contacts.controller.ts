@@ -7,10 +7,9 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Contact, Prisma } from '@prisma/client';
-import { ReqUser } from 'src/auth/req-user';
+import { ReqUser, RequestUser } from 'src/auth/req-user';
 import { ContactsService } from './contacts.service';
 
 @Controller('contacts')
@@ -20,12 +19,25 @@ export class ContactsController {
   @Post()
   async createContact(
     @ReqUser('id') userId: number,
-    @Body() data: Omit<Prisma.ContactCreateInput, 'user'>,
+    @Body() data: ContactCreateBody,
   ): Promise<Contact> {
+    const { name, email, phones } = data;
+
     return this.contactsService.create({
-      ...data,
-      user: {
-        connect: { id: userId },
+      ...(phones && { include: { phones: true } }),
+      data: {
+        name,
+        email,
+        ...(phones && {
+          phones: {
+            createMany: {
+              data: phones,
+            },
+          },
+        }),
+        user: {
+          connect: { id: userId },
+        },
       },
     });
   }
@@ -55,30 +67,51 @@ export class ContactsController {
 
   @Get(':id')
   async getContactById(
-    @ReqUser('id') userId: number,
+    @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Contact> {
-    const contact = await this.contactsService.findUnique(id);
-    if (contact.userId !== userId) {
-      throw new UnauthorizedException('You do not have access to this contact');
-    }
-    return contact;
+    return this.contactsService.findUniqueIfAllowed({ user, id });
   }
 
   @Put(':id')
   async updateContact(
-    @ReqUser('id') userId: number,
+    @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: Prisma.ContactUpdateInput,
+    @Body() data: ContactUpdateBody,
   ): Promise<Contact> {
-    return this.contactsService.update(id, data);
+    const { name, email } = data;
+    await this.contactsService.findUniqueIfAllowed({ user, id });
+
+    return this.contactsService.update({
+      where: { id },
+      data: {
+        name,
+        email,
+      },
+    });
   }
 
   @Delete(':id')
   async deleteContact(
-    @ReqUser('id') userId: number,
+    @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Contact> {
-    return this.contactsService.delete(id);
+    await this.contactsService.findUniqueIfAllowed({ user, id });
+
+    return this.contactsService.delete({ where: { id } });
   }
 }
+
+type ContactCreateBody = Omit<
+  Prisma.ContactCreateInput,
+  'createdAt' | 'updatedAt' | 'user' | 'phones'
+> & {
+  phones?: Array<
+    Omit<Prisma.ContactPhoneCreateInput, 'createdAt' | 'updatedAt' | 'contact'>
+  >;
+};
+
+type ContactUpdateBody = Omit<
+  Prisma.ContactUpdateInput,
+  'createdAt' | 'updatedAt' | 'user' | 'phones'
+>;
