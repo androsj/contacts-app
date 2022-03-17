@@ -11,7 +11,7 @@ import type { RequestUser, WithUser } from 'src/auth/req-user';
 export class ContactsService {
   constructor(private readonly db: DatabaseService) {}
 
-  assertUserOwnsContact(params: {
+  assertUserCanAccess(params: {
     contact: Pick<Contact, 'userId'>;
     user: RequestUser;
   }) {
@@ -38,7 +38,7 @@ export class ContactsService {
     return contact;
   }
 
-  async findUniqueIfAllowed(
+  async findAndAssertUserCanAccess(
     params: WithUser<Prisma.ContactFindUniqueArgs>,
   ): Promise<Contact> {
     const { user, ...uniqueParams } = params;
@@ -48,7 +48,7 @@ export class ContactsService {
       ...uniqueParams,
     });
 
-    this.assertUserOwnsContact({ contact, user });
+    this.assertUserCanAccess({ contact, user });
 
     return contact;
   }

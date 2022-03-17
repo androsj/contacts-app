@@ -74,7 +74,7 @@ export class ContactsController {
       where: { id },
     });
 
-    this.contactsService.assertUserOwnsContact({ contact, user });
+    this.contactsService.assertUserCanAccess({ contact, user });
 
     return contact;
   }
@@ -86,7 +86,7 @@ export class ContactsController {
     @Body() data: ContactUpdateBody,
   ): Promise<Contact> {
     const { name, email } = data;
-    await this.contactsService.findUniqueIfAllowed({
+    await this.contactsService.findAndAssertUserCanAccess({
       user,
       where: { id },
     });
@@ -105,7 +105,7 @@ export class ContactsController {
     @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Contact> {
-    await this.contactsService.findUniqueIfAllowed({
+    await this.contactsService.findAndAssertUserCanAccess({
       user,
       where: { id },
     });
