@@ -5,11 +5,20 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { Contact, Prisma } from '@prisma/client';
-import { RequestUser } from 'src/auth/req-user';
+import type { RequestUser, WithUser } from 'src/auth/req-user';
 
 @Injectable()
 export class ContactsService {
   constructor(private readonly db: DatabaseService) {}
+
+  assertUserOwnsContact(params: {
+    contact: Pick<Contact, 'userId'>;
+    user: RequestUser;
+  }) {
+    if (params.contact.userId !== params.user.id) {
+      throw new UnauthorizedException('You do not have access to this contact');
+    }
+  }
 
   async create(params: Prisma.ContactCreateArgs): Promise<Contact> {
     return this.db.contact.create(params);
@@ -29,16 +38,17 @@ export class ContactsService {
     return contact;
   }
 
-  async findUniqueIfAllowed(params: {
-    user: RequestUser;
-    id: number;
-  }): Promise<Contact> {
-    const { user, id } = params;
-    const contact = await this.findUnique({ where: { id } });
+  async findUniqueIfAllowed(
+    params: WithUser<Prisma.ContactFindUniqueArgs>,
+  ): Promise<Contact> {
+    const { user, ...uniqueParams } = params;
 
-    if (contact.userId !== user.id) {
-      throw new UnauthorizedException('You do not have access to this contact');
-    }
+    const contact = await this.findUnique({
+      select: { id: true, userId: true },
+      ...uniqueParams,
+    });
+
+    this.assertUserOwnsContact({ contact, user });
 
     return contact;
   }

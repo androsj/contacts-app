@@ -70,7 +70,13 @@ export class ContactsController {
     @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Contact> {
-    return this.contactsService.findUniqueIfAllowed({ user, id });
+    const contact = await this.contactsService.findUnique({
+      where: { id },
+    });
+
+    this.contactsService.assertUserOwnsContact({ contact, user });
+
+    return contact;
   }
 
   @Put(':id')
@@ -80,7 +86,10 @@ export class ContactsController {
     @Body() data: ContactUpdateBody,
   ): Promise<Contact> {
     const { name, email } = data;
-    await this.contactsService.findUniqueIfAllowed({ user, id });
+    await this.contactsService.findUniqueIfAllowed({
+      user,
+      where: { id },
+    });
 
     return this.contactsService.update({
       where: { id },
@@ -96,7 +105,10 @@ export class ContactsController {
     @ReqUser() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Contact> {
-    await this.contactsService.findUniqueIfAllowed({ user, id });
+    await this.contactsService.findUniqueIfAllowed({
+      user,
+      where: { id },
+    });
 
     return this.contactsService.delete({ where: { id } });
   }
