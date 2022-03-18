@@ -3,9 +3,9 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { Contact, Prisma } from '@prisma/client';
-import type { RequestUser, WithUser } from 'src/auth/req-user';
+import type { RequestUser, WithUser } from '../auth/req-user';
 
 @Injectable()
 export class ContactsService {

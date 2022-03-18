@@ -9,7 +9,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { Contact, Prisma } from '@prisma/client';
-import { ReqUser, RequestUser } from 'src/auth/req-user';
+import { ReqUser, RequestUser } from '../auth/req-user';
 import { ContactsService } from './contacts.service';
 
 @Controller('contacts')

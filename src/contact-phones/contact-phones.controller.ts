@@ -11,8 +11,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { Contact, ContactPhone, Prisma } from '@prisma/client';
-import { ReqUser, RequestUser } from 'src/auth/req-user';
-import { ContactsService } from 'src/contacts/contacts.service';
+import { ReqUser, RequestUser } from '../auth/req-user';
+import { ContactsService } from '../contacts/contacts.service';
 import { ContactPhonesService } from './contact-phones.service';
 
 @Controller('contact-phones')

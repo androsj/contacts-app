@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ContactsService } from 'src/contacts/contacts.service';
-import { DatabaseService } from 'src/database/database.service';
+import { ContactsService } from '../contacts/contacts.service';
+import { DatabaseService } from '../database/database.service';
 import { ContactPhone, Prisma } from '@prisma/client';
-import type { WithUser } from 'src/auth/req-user';
+import type { WithUser } from '../auth/req-user';
 
 @Injectable()
 export class ContactPhonesService {
