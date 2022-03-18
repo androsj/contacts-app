@@ -86,6 +86,7 @@ export class ContactsController {
     @Body() data: ContactUpdateBody,
   ): Promise<Contact> {
     const { name, email } = data;
+
     await this.contactsService.findAndAssertUserCanAccess({
       user,
       where: { id },

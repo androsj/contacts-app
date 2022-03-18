@@ -20,6 +20,25 @@ export class ContactsService {
     }
   }
 
+  async findAndAssertUserCanAccess(
+    params: WithUser<Prisma.ContactFindUniqueArgs>,
+  ) {
+    const { user, where } = params;
+
+    const contact = await this.db.contact.findUnique({
+      where,
+      select: { id: true, userId: true },
+    });
+
+    if (!contact) {
+      throw new NotFoundException('Contact was not found');
+    }
+
+    this.assertUserCanAccess({ contact, user });
+
+    return contact;
+  }
+
   async create(params: Prisma.ContactCreateArgs): Promise<Contact> {
     return this.db.contact.create(params);
   }
@@ -34,21 +53,6 @@ export class ContactsService {
     if (!contact) {
       throw new NotFoundException('Contact was not found');
     }
-
-    return contact;
-  }
-
-  async findAndAssertUserCanAccess(
-    params: WithUser<Prisma.ContactFindUniqueArgs>,
-  ): Promise<Contact> {
-    const { user, ...uniqueParams } = params;
-
-    const contact = await this.findUnique({
-      select: { id: true, userId: true },
-      ...uniqueParams,
-    });
-
-    this.assertUserCanAccess({ contact, user });
 
     return contact;
   }
