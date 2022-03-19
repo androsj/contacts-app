@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -23,6 +24,10 @@ export class ContactsController {
   ): Promise<Contact> {
     const { name, email, phones } = data;
 
+    if (!name) {
+      throw new BadRequestException('name is required');
+    }
+
     return this.contactsService.create({
       ...(phones && { include: { phones: true } }),
       data: {
@@ -45,7 +50,7 @@ export class ContactsController {
   @Get()
   async getUserContacts(
     @ReqUser('id') userId: number,
-    @Body() args: Prisma.ContactFindManyArgs,
+    @Body() args?: Prisma.ContactFindManyArgs,
   ): Promise<Contact[]> {
     const {
       where,
@@ -53,7 +58,7 @@ export class ContactsController {
         name: Prisma.SortOrder.asc,
       },
       ...restArgs
-    } = args;
+    } = args || {};
 
     return this.contactsService.findMany({
       where: {

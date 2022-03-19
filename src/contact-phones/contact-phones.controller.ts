@@ -32,6 +32,9 @@ export class ContactPhonesController {
     if (!contactId) {
       throw new BadRequestException('contactId is required');
     }
+    if (!phone) {
+      throw new BadRequestException('phone is required');
+    }
 
     await this.contactsService.findAndAssertUserCanAccess({
       user,
