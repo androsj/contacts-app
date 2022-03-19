@@ -31,7 +31,7 @@ describe('ContactsController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ContactsController],
-      providers: [ContactsService, ContactsServiceFake],
+      providers: [ContactsServiceFake],
     }).compile();
 
     controller = module.get<ContactsController>(ContactsController);
@@ -72,7 +72,11 @@ describe('ContactsController', () => {
     it('should call findUnique from the service', async () => {
       const id = faker.datatype.number();
       await controller.getContactById(user, id);
-      expect(contactsService.findUnique).toHaveBeenCalled();
+
+      expect(contactsService.findUnique).toHaveBeenCalledWith({
+        where: { id },
+      });
+      expect(contactsService.assertUserCanAccess).toHaveBeenCalled();
     });
   });
 
@@ -81,7 +85,12 @@ describe('ContactsController', () => {
       const id = faker.datatype.number();
       const data = { name: faker.name.findName() };
       await controller.updateContact(user, id, data);
-      expect(contactsService.update).toHaveBeenCalled();
+
+      expect(contactsService.findAndAssertUserCanAccess).toHaveBeenCalled();
+      expect(contactsService.update).toHaveBeenCalledWith({
+        data,
+        where: { id },
+      });
     });
   });
 
@@ -89,7 +98,11 @@ describe('ContactsController', () => {
     it('should call delete from the service', async () => {
       const id = faker.datatype.number();
       await controller.deleteContact(user, id);
-      expect(contactsService.delete).toHaveBeenCalled();
+
+      expect(contactsService.findAndAssertUserCanAccess).toHaveBeenCalled();
+      expect(contactsService.delete).toHaveBeenCalledWith({
+        where: { id },
+      });
     });
   });
 });
