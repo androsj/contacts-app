@@ -4,6 +4,7 @@ import { ContactsService } from './contacts.service';
 import { RequestUser } from '../auth/req-user';
 import { BadRequestException } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
+import { ContactsServiceFake } from './contacts.service.mock';
 
 describe('ContactsController', () => {
   let controller: ContactsController;
@@ -16,19 +17,6 @@ describe('ContactsController', () => {
   };
 
   beforeEach(async () => {
-    const ContactsServiceFake = {
-      provide: ContactsService,
-      useFactory: () => ({
-        assertUserCanAccess: jest.fn(() => void 0),
-        findAndAssertUserCanAccess: jest.fn(() => ({})),
-        create: jest.fn(() => ({})),
-        findMany: jest.fn(() => []),
-        findUnique: jest.fn(() => ({})),
-        update: jest.fn(() => ({})),
-        delete: jest.fn(() => ({})),
-      }),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ContactsController],
       providers: [ContactsServiceFake],

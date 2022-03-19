@@ -56,9 +56,9 @@ export class ContactPhonesController {
   async getContactPhones(
     @ReqUser() user: RequestUser,
     @Query('contactId', ParseIntPipe) contactId: number,
-    @Body() args: Prisma.ContactPhoneFindManyArgs,
+    @Body() args?: Prisma.ContactPhoneFindManyArgs,
   ): Promise<ContactPhone[]> {
-    const { where, ...restArgs } = args;
+    const { where, ...restArgs } = args || {};
 
     await this.contactsService.findAndAssertUserCanAccess({
       user,
